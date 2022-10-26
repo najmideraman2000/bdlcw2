@@ -43,10 +43,12 @@ contract DiceGame
         require(player1.addr == address(0x0) || player2.addr == address(0x0));
         require(balances[msg.sender] >= 3 * 10**18);
 
-        if (player1.addr == address(0x0)) {
+        if (player1.addr == address(0x0)) 
+        {
             player1.addr = msg.sender;
         }
-        else if (player2.addr == address(0x0)) {
+        else if (player2.addr == address(0x0)) 
+        {
             player2.addr = msg.sender;
             gameResetted = false;
         }
@@ -74,10 +76,12 @@ contract DiceGame
         bytes32 hash = keccak256(abi.encodePacked(msg.sender, _number, _secret));
         require(hash == com.hash, "Hash doesn't match");
 
-        if (msg.sender == player1.addr) {
+        if (msg.sender == player1.addr) 
+        {
             player1.number = _number;
         }
-        else if (msg.sender == player2.addr) {
+        else if (msg.sender == player2.addr) 
+        {
             player2.number = _number;
         }
         com.checked = true;
@@ -91,13 +95,15 @@ contract DiceGame
     {
         diceRoll = ((player1.number + player2.number) % 6) + 1;
 
-        if (diceRoll == 1 || diceRoll == 2 || diceRoll == 3) {
+        if (diceRoll == 1 || diceRoll == 2 || diceRoll == 3) 
+        {
             winner = player1.addr;
             loser = player2.addr;
             balances[winner] += diceRoll* 10**18;
             balances[loser] -= diceRoll* 10**18;
         }
-        else if (diceRoll == 4 || diceRoll == 5 || diceRoll == 6) {
+        else if (diceRoll == 4 || diceRoll == 5 || diceRoll == 6) 
+        {
             winner = player2.addr;
             loser = player1.addr;
             balances[winner] += (diceRoll-3) * 10**18;
