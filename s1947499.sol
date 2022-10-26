@@ -102,6 +102,11 @@ contract DiceGame
         balances[msg.sender] += msg.value;
     }
 
+    function getBalance() public view returns (uint256)
+    {
+        return balances[msg.sender];
+    }
+
     // function cancel() public
     // {
     //     require(!gameOver, "Game has already started.");
