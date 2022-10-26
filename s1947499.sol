@@ -30,7 +30,7 @@ contract DiceGame
     function join() public payable 
     {
         require(player1.addr == address(0x0) || player2.addr == address(0x0));
-        require(balances[msg.sender] >= 3);
+        require(balances[msg.sender] >= 3 * 10^18);
 
         if (player1.addr == address(0x0)) {
             player1.addr = msg.sender;
