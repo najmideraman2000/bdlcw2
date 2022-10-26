@@ -9,9 +9,9 @@ contract DiceGame
     address public winner;
     address public loser;
     bool public gameOver = false;
-    uint private diceRoll;
-    uint private prize;
+    uint256 private diceRoll;
     mapping(address => Commit) commits;
+    mapping(address => uint256) balances;
 
     struct Player 
     {
@@ -30,7 +30,7 @@ contract DiceGame
     function join() public payable 
     {
         require(player1.addr == address(0x0) || player2.addr == address(0x0));
-        require(msg.value == 3, "Amount of 3 ETH needed to join the game");
+        require(balances[msg.sender] >= 3);
 
         if (player1.addr == address(0x0)) {
             player1.addr = msg.sender;
@@ -80,26 +80,26 @@ contract DiceGame
         diceRoll = ((player1.number + player2.number) % 6) + 1;
 
         if (diceRoll == 1 || diceRoll == 2 || diceRoll == 3) {
+            balances[msg.sender] += diceRoll * 10^18;
             winner = player1.addr;
-            prize = diceRoll;
         }
         else if (diceRoll == 4 || diceRoll == 5 || diceRoll == 6) {
+            balances[msg.sender] += (diceRoll-3) * 10^18;
             loser = player2.addr;
-            prize = diceRoll - 3;
         }
     }
 
-    function withdrawPrize() external 
+    function withdraw() external 
     {
-        require(msg.sender ==  winner, "Only the winner can claim the prize.");
-        payable(msg.sender).transfer(prize);
+        uint256 b = balances[msg.sender];
+        balances[msg.sender] = 0;
+        payable(msg.sender).transfer(b);
         gameOver = true;
     }
 
-    function withdrawRefund() external 
+    function deposit() external payable
     {
-        require(msg.sender == loser, "Only the loser can claim the leftover refund.");
-        payable(msg.sender).transfer(address(this).balance - prize);
+        balances[msg.sender] += msg.value;
     }
 
     // function cancel() public
