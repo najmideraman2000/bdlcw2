@@ -102,18 +102,8 @@ contract DiceGame
         balances[msg.sender] += msg.value;
     }
 
-    function getBalance() external view returns (uint256)
+    function checkBalance() external view returns (uint256) 
     {
         return balances[msg.sender];
     }
-
-    // function cancel() public
-    // {
-    //     require(!gameOver, "Game has already started.");
-
-    //     gameOver = true;
-    //     player1.addr = address(0x0);
-    //     player2.addr = address(0x0);
-    // }
-    
 }
