@@ -4,20 +4,20 @@ pragma solidity >=0.7.0 <0.9.0;
 
 contract DiceGame 
 {
-    Player private player1 = Player(address(0x0), 0, false);
-    Player private player2 = Player(address(0x0), 0, false);
+    Player private player1 = Player(address(0x0), 0);
+    Player private player2 = Player(address(0x0), 0);
     address public winner;
     address public loser;
-    bool public gameOver = false;
+    bool public gameResetted = true;
     uint256 private diceRoll;
     mapping(address => Commit) commits;
     mapping(address => uint256) balances;
+    mapping(address => bool) inGame;
 
     struct Player 
     {
         address addr;
         uint number;
-        bool numberSent;
     }
 
     struct Commit 
@@ -27,17 +27,28 @@ contract DiceGame
         bool checked;
     }
 
+    function deposit() public payable
+    {
+        balances[msg.sender] += msg.value;
+    }
+
+    function checkBalance() external view returns (uint256) 
+    {
+        return balances[msg.sender];
+    }
+
     function join() public 
     {
+        require(gameResetted);
         require(player1.addr == address(0x0) || player2.addr == address(0x0));
-        require(balances[msg.sender] >= 3 * 10^18);
+        require(balances[msg.sender] >= 3 * 10**18);
 
         if (player1.addr == address(0x0)) {
             player1.addr = msg.sender;
         }
         else if (player2.addr == address(0x0)) {
             player2.addr = msg.sender;
-            gameOver = false;
+            gameResetted = false;
         }
     }
 
@@ -65,45 +76,53 @@ contract DiceGame
 
         if (msg.sender == player1.addr) {
             player1.number = _number;
-            player1.numberSent = true;
         }
         else if (msg.sender == player2.addr) {
             player2.number = _number;
-            player2.numberSent = true;
         }
         com.checked = true;
+        
+        if (com1.checked && com2.checked) {
+            findWinner();
+        }
     }
 
-    function revealWinner() public 
+    function findWinner() private
     {
-        require(player1.numberSent && player2.numberSent);
         diceRoll = ((player1.number + player2.number) % 6) + 1;
 
         if (diceRoll == 1 || diceRoll == 2 || diceRoll == 3) {
-            balances[msg.sender] += diceRoll * 10^18;
             winner = player1.addr;
+            loser = player2.addr;
+            balances[winner] += diceRoll* 10**18;
+            balances[loser] -= diceRoll* 10**18;
         }
         else if (diceRoll == 4 || diceRoll == 5 || diceRoll == 6) {
-            balances[msg.sender] += (diceRoll-3) * 10^18;
-            loser = player2.addr;
+            winner = player2.addr;
+            loser = player1.addr;
+            balances[winner] += (diceRoll-3) * 10**18;
+            balances[loser] -= (diceRoll-3) * 10**18;
         }
+        inGame[player1.addr] = false;
+        inGame[player2.addr] = false;
+        resetGame();
     }
 
     function withdraw() external 
     {
+        require(inGame[msg.sender] == false);
+
         uint256 b = balances[msg.sender];
         balances[msg.sender] = 0;
         payable(msg.sender).transfer(b);
-        gameOver = true;
     }
 
-    function deposit() public payable
+    function resetGame() private
     {
-        balances[msg.sender] += msg.value;
-    }
-
-    function checkBalance() external view returns (uint256) 
-    {
-        return balances[msg.sender];
+        commits[player1.addr] = Commit("", false, false);
+        commits[player2.addr] = Commit("", false, false);
+        player1 = Player(address(0x0), 0);
+        player2 = Player(address(0x0), 0);
+        gameResetted = true;
     }
 }
