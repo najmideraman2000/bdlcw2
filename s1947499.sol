@@ -27,7 +27,7 @@ contract DiceGame
         bool checked;
     }
 
-    function join() public payable 
+    function join() public 
     {
         require(player1.addr == address(0x0) || player2.addr == address(0x0));
         require(balances[msg.sender] >= 3 * 10^18);
@@ -97,12 +97,12 @@ contract DiceGame
         gameOver = true;
     }
 
-    function deposit() external payable
+    function deposit() public payable
     {
         balances[msg.sender] += msg.value;
     }
 
-    function getBalance() public view returns (uint256)
+    function getBalance() external view returns (uint256)
     {
         return balances[msg.sender];
     }
