@@ -131,4 +131,9 @@ contract DiceGame
         player2 = Player(address(0x0), 0);
         gameResetted = true;
     }
+
+    function hashUserInput (uint256 _number, string memory _secret) external view returns (bytes32) 
+    {
+        return keccak256(abi.encodePacked(msg.sender, _number, _secret));
+    }
 }
